@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Soquinhos - Frenzy</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:radial-gradient(circle at center,#3d1010,#160606 65%,#080303);
+    font-family:Arial,sans-serif;
+    color:white;
+    overflow:hidden;
+}
+
+.container{
+    width:92%;
+    max-width:900px;
+    text-align:center;
+}
+
+h1{
+    font-size:48px;
+    font-weight:900;
+    letter-spacing:3px;
+    text-shadow:0 4px 15px #000;
+    margin-bottom:4px;
+}
+
+.subtitulo{
+    color:#aaa;
+    margin-bottom:18px;
+}
+
+.upload{
+    display:inline-block;
+    padding:13px 26px;
+    background:#d71919;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:bold;
+    transition:.2s;
+    box-shadow:0 5px 15px #0008;
+}
+
+.upload:hover{
+    background:#ff2424;
+    transform:scale(1.05);
+}
+
+input{
+    display:none;
+}
+
+.informacoes{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:35px;
+    margin:15px 0;
+    font-size:21px;
+    font-weight:bold;
+}
+
+.valor{
+    color:#ff3c3c;
+    text-shadow:0 0 10px #ff0000;
+}
+
+.frenzy{
+    display:none;
+    color:#ff2020;
+    font-size:25px;
+    font-weight:900;
+    margin-bottom:8px;
+    animation:frenzy .25s infinite alternate;
+}
+
+.frenzy.ativo{
+    display:block;
+}
+
+.barra-container{
+    width:100%;
+    height:15px;
+    background:#260707;
+    border-radius:20px;
+    overflow:hidden;
+    margin-bottom:15px;
+    border:1px solid #571414;
+}
+
+.barra{
+    width:0%;
+    height:100%;
+    background:linear-gradient(to right,#ff9000,#ff3030,#b00000);
+    transition:width .15s;
+    box-shadow:0 0 15px #ff0000;
+}
+
+.area{
+    position:relative;
+    width:100%;
+    height:540px;
+    background:#090909;
+    border:3px solid #511414;
+    border-radius:18px;
+    overflow:hidden;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    cursor:crosshair;
+    box-shadow:0 0 40px #000;
+    transition:border-color .2s,box-shadow .2s;
+}
+
+.area.frenzy-mode{
+    border-color:#e00000;
+    box-shadow:0 0 35px #ff0000,0 0 80px #ff000055;
+}
+
+#foto{
+    max-width:100%;
+    max-height:100%;
+    object-fit:contain;
+    display:none;
+    user-select:none;
+    pointer-events:none;
+}
+
+.instrucao{
+    color:#777;
+    font-size:18px;
+}
+
+.marca{
+    position:absolute;
+    width:85px;
+    height:85px;
+    border-radius:50%;
+    transform:translate(-50%,-50%);
+    background:radial-gradient(circle,#ff0000bb 0%,#e0000066 35%,#80000033 55%,transparent 72%);
+    box-shadow:0 0 20px #ff000055;
+    pointer-events:none;
+    z-index:4;
+    animation:marcaEntrada .18s ease-out;
+}
+
+.impacto{
+    position:absolute;
+    width:100px;
+    height:100px;
+    border:5px solid #ff3030;
+    border-radius:50%;
+    transform:translate(-50%,-50%);
+    pointer-events:none;
+    z-index:7;
+    animation:onda .45s ease-out forwards;
+}
+
+.impacto2{
+    position:absolute;
+    width:45px;
+    height:45px;
+    border:3px solid #ff8585;
+    border-radius:50%;
+    transform:translate(-50%,-50%);
+    pointer-events:none;
+    z-index:7;
+    animation:onda2 .3s ease-out forwards;
+}
+
+.punho{
+    position:absolute;
+    font-size:78px;
+    pointer-events:none;
+    z-index:20;
+    filter:drop-shadow(0 6px 5px #000);
+    animation:golpe .28s cubic-bezier(.2,.8,.2,1) forwards;
+}
+
+.pow{
+    position:absolute;
+    color:#ff2424;
+    font-size:42px;
+    font-weight:900;
+    text-shadow:3px 3px 0 #000;
+    pointer-events:none;
+    z-index:25;
+    animation:textoImpacto .45s ease-out forwards;
+}
+
+.critico{
+    position:absolute;
+    color:white;
+    font-size:28px;
+    font-weight:900;
+    text-shadow:0 0 10px #ff0000,3px 3px 0 #000;
+    pointer-events:none;
+    z-index:26;
+    animation:critico .65s ease-out forwards;
+}
+
+.particula{
+    position:absolute;
+    width:9px;
+    height:9px;
+    border-radius:50%;
+    background:#ff2525;
+    pointer-events:none;
+    z-index:10;
+    animation:particula .5s ease-out forwards;
+}
+
+.flash{
+    position:absolute;
+    inset:0;
+    background:#ff000044;
+    pointer-events:none;
+    z-index:60;
+    animation:flash .15s ease-out forwards;
+}
+
+.explosao{
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    background:#d00000;
+    transform:translate(-50%,-50%);
+    z-index:50;
+    animation:explodir .7s ease-out forwards;
+    pointer-events:none;
+}
+
+.explosao::before{
+    content:"";
+    position:absolute;
+    inset:-30px;
+    border:8px solid #ff2020;
+    border-radius:50%;
+    animation:ondaExplosao .7s ease-out forwards;
+}
+
+.sangue-explosao{
+    position:absolute;
+    width:12px;
+    height:20px;
+    background:#a80000;
+    border-radius:60% 40% 65% 35%;
+    z-index:45;
+    pointer-events:none;
+    animation:sangueExplodir .9s ease-out forwards;
+}
+
+.botao{
+    margin-top:16px;
+    padding:11px 28px;
+    border:0;
+    border-radius:9px;
+    background:#292929;
+    color:white;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.botao:hover{
+    background:#444;
+}
+
+.tremor{
+    animation:tremor .16s linear;
+}
+
+.tremor-forte{
+    animation:tremorForte .25s linear;
+}
+
+@keyframes golpe{
+    0%{
+        transform:translate(-50%,-50%) scale(.2) rotate(-40deg);
+        opacity:0;
+    }
+
+    35%{
+        transform:translate(-50%,-50%) scale(1.45) rotate(8deg);
+        opacity:1;
+    }
+
+    65%{
+        transform:translate(-50%,-50%) scale(1.1) rotate(-3deg);
+        opacity:1;
+    }
+
+    100%{
+        transform:translate(20%,-100%) scale(.65) rotate(25deg);
+        opacity:0;
+    }
+}
+
+@keyframes marcaEntrada{
+    from{
+        transform:translate(-50%,-50%) scale(.4);
+        opacity:.2;
+    }
+
+    to{
+        transform:translate(-50%,-50%) scale(1);
+        opacity:1;
+    }
+}
+
+@keyframes onda{
+    from{
+        transform:translate(-50%,-50%) scale(.2);
+        opacity:1;
+    }
+
+    to{
+        transform:translate(-50%,-50%) scale(1.7);
+        opacity:0;
+    }
+}
+
+@keyframes onda2{
+    from{
+        transform:translate(-50%,-50%) scale(.2);
+        opacity:1;
+    }
+
+    to{
+        transform:translate(-50%,-50%) scale(1.8);
+        opacity:0;
+    }
+}
+
+@keyframes textoImpacto{
+    0%{
+        transform:translate(-50%,-50%) scale(.3) rotate(-10deg);
+        opacity:0;
+    }
+
+    35%{
+        transform:translate(-50%,-50%) scale(1.3) rotate(5deg);
+        opacity:1;
+    }
+
+    100%{
+        transform:translate(-50%,-120%) scale(.8) rotate(10deg);
+        opacity:0;
+    }
+}
+
+@keyframes critico{
+    0%{
+        transform:translate(-50%,-50%) scale(.3);
+        opacity:0;
+    }
+
+    30%{
+        transform:translate(-50%,-50%) scale(1.3);
+        opacity:1;
+    }
+
+    100%{
+        transform:translate(-50%,-130%) scale(.8);
+        opacity:0;
+    }
+}
+
+@keyframes particula{
+    0%{
+        transform:translate(0,0) scale(1);
+        opacity:1;
+    }
+
+    100%{
+        transform:translate(var(--dx),var(--dy)) scale(.1);
+        opacity:0;
+    }
+}
+
+@keyframes flash{
+    from{
+        opacity:1;
+    }
+
+    to{
+        opacity:0;
+    }
+}
+
+@keyframes explodir{
+    0%{
+        transform:translate(-50%,-50%) scale(.2);
+        opacity:1;
+    }
+
+    35%{
+        transform:translate(-50%,-50%) scale(5);
+        opacity:1;
+    }
+
+    100%{
+        transform:translate(-50%,-50%) scale(12);
+        opacity:0;
+    }
+}
+
+@keyframes ondaExplosao{
+    0%{
+        transform:scale(.2);
+        opacity:1;
+    }
+
+    100%{
+        transform:scale(4);
+        opacity:0;
+    }
+}
+
+@keyframes sangueExplodir{
+    0%{
+        transform:translate(0,0) scale(.5) rotate(0deg);
+        opacity:1;
+    }
+
+    70%{
+        opacity:1;
+    }
+
+    100%{
+        transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(1.3);
+        opacity:0;
+    }
+}
+
+@keyframes tremor{
+    0%{transform:translate(0,0);}
+    20%{transform:translate(-7px,3px);}
+    40%{transform:translate(6px,-3px);}
+    60%{transform:translate(-5px,-2px);}
+    80%{transform:translate(4px,3px);}
+    100%{transform:translate(0,0);}
+}
+
+@keyframes tremorForte{
+    0%{transform:translate(0,0) rotate(0);}
+    15%{transform:translate(-12px,5px) rotate(-1deg);}
+    30%{transform:translate(10px,-6px) rotate(1deg);}
+    45%{transform:translate(-9px,-5px) rotate(-1deg);}
+    60%{transform:translate(8px,6px) rotate(1deg);}
+    75%{transform:translate(-5px,-3px);}
+    100%{transform:translate(0,0) rotate(0);}
+}
+
+@keyframes frenzy{
+    from{
+        transform:scale(1);
+        text-shadow:0 0 5px #f00;
+    }
+
+    to{
+        transform:scale(1.12);
+        text-shadow:0 0 20px #f00;
+    }
+}
+
+@media(max-width:600px){
+    h1{
+        font-size:35px;
+    }
+
+    .area{
+        height:430px;
+    }
+
+    .informacoes{
+        gap:15px;
+        font-size:17px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>SOQUINHOS</h1>
+
+    <div class="subtitulo">
+        Escolha uma foto e comece o combo.
+    </div>
+
+    <label class="upload">
+        ESCOLHER FOTO
+        <input type="file" id="arquivo" accept="image/*">
+    </label>
+
+    <div class="informacoes">
+        <div>
+            GOLPES:
+            <span class="valor" id="contador">0</span>
+        </div>
+
+        <div>
+            COMBO:
+            <span class="valor" id="combo">0</span>
+        </div>
+    </div>
+
+    <div class="frenzy" id="frenzy">
+        FRENZY MODE
+    </div>
+
+    <div class="barra-container">
+        <div class="barra" id="barra"></div>
+    </div>
+
+    <div class="area" id="area">
+
+        <span class="instrucao" id="instrucao">
+            Escolha uma foto para começar
+        </span>
+
+        <img id="foto" alt="Foto selecionada">
+
+    </div>
+
+    <button class="botao" onclick="resetar()">
+        ZERAR
+    </button>
+
+</div>
+
+<script>
+const arquivo=document.getElementById("arquivo");
+const foto=document.getElementById("foto");
+const area=document.getElementById("area");
+const instrucao=document.getElementById("instrucao");
+const contador=document.getElementById("contador");
+const comboTexto=document.getElementById("combo");
+const barra=document.getElementById("barra");
+const frenzyTexto=document.getElementById("frenzy");
+
+let golpes=0;
+let combo=0;
+let ultimoGolpe=0;
+let explodiu=false;
+
+arquivo.addEventListener("change",function(){
+    const file=this.files[0];
+
+    if(!file)return;
+
+    const reader=new FileReader();
+
+    reader.onload=function(e){
+        foto.src=e.target.result;
+        foto.style.display="block";
+        instrucao.style.display="none";
+
+        golpes=0;
+        combo=0;
+        ultimoGolpe=0;
+        explodiu=false;
+
+        contador.textContent="0";
+        comboTexto.textContent="0";
+        barra.style.width="0%";
+
+        frenzyTexto.classList.remove("ativo");
+        area.classList.remove("frenzy-mode");
+
+        document.querySelectorAll(
+            ".marca,.particula,.pow,.critico,.impacto,.impacto2,.punho,.flash,.explosao,.sangue-explosao"
+        ).forEach(el=>el.remove());
+    };
+
+    reader.readAsDataURL(file);
+});
+
+area.addEventListener("click",function(e){
+
+    if(foto.style.display==="none")return;
+
+    if(explodiu)return;
+
+    golpes++;
+
+    const agora=Date.now();
+
+    if(agora-ultimoGolpe<1000){
+        combo++;
+    }else{
+        combo=1;
+    }
+
+    ultimoGolpe=agora;
+
+    contador.textContent=golpes;
+    comboTexto.textContent=combo;
+
+    const dano=Math.min(golpes*3,100);
+
+    barra.style.width=dano+"%";
+
+    const rect=area.getBoundingClientRect();
+
+    const x=e.clientX-rect.left;
+    const y=e.clientY-rect.top;
+
+    criarMarca(x,y);
+    criarPunho(x,y);
+    criarImpactos(x,y);
+    criarParticulas(x,y);
+    criarTexto(x,y);
+
+    if(combo>=5){
+        tremer("normal");
+    }
+
+    if(combo>=10){
+        tremer("forte");
+        frenzyTexto.classList.add("ativo");
+        area.classList.add("frenzy-mode");
+    }
+
+    if(combo%10===0){
+        criarCritico(x,y);
+        criarFlash();
+    }
+
+    if(dano>=100){
+        explosaoFinal();
+    }
+});
+
+function criarMarca(x,y){
+
+    const marca=document.createElement("div");
+
+    marca.className="marca";
+    marca.style.left=x+"px";
+    marca.style.top=y+"px";
+
+    area.appendChild(marca);
+}
+
+function criarPunho(x,y){
+
+    const punho=document.createElement("div");
+
+    punho.className="punho";
+    punho.textContent="👊";
+    punho.style.left=x+"px";
+    punho.style.top=y+"px";
+
+    area.appendChild(punho);
+
+    setTimeout(()=>{
+        punho.remove();
+    },300);
+}
+
+function criarImpactos(x,y){
+
+    const impacto=document.createElement("div");
+
+    impacto.className="impacto";
+    impacto.style.left=x+"px";
+    impacto.style.top=y+"px";
+
+    area.appendChild(impacto);
+
+    const impacto2=document.createElement("div");
+
+    impacto2.className="impacto2";
+    impacto2.style.left=x+"px";
+    impacto2.style.top=y+"px";
+
+    area.appendChild(impacto2);
+
+    setTimeout(()=>{
+        impacto.remove();
+        impacto2.remove();
+    },500);
+}
+
+function criarParticulas(x,y){
+
+    for(let i=0;i<8;i++){
+
+        const particula=document.createElement("div");
+
+        particula.className="particula";
+        particula.style.left=x+"px";
+        particula.style.top=y+"px";
+
+        const angulo=Math.random()*Math.PI*2;
+        const distancia=40+Math.random()*90;
+
+        particula.style.setProperty(
+            "--dx",
+            Math.cos(angulo)*distancia+"px"
+        );
+
+        particula.style.setProperty(
+            "--dy",
+            Math.sin(angulo)*distancia+"px"
+        );
+
+        area.appendChild(particula);
+
+        setTimeout(()=>{
+            particula.remove();
+        },550);
+    }
+}
+
+function criarTexto(x,y){
+
+    const palavras=[
+        "POW!",
+        "BAM!",
+        "TUM!",
+        "PÁ!",
+        "BOOM!",
+        "SMASH!"
+    ];
+
+    const texto=document.createElement("div");
+
+    texto.className="pow";
+    texto.textContent=palavras[
+        Math.floor(Math.random()*palavras.length)
+    ];
+
+    texto.style.left=(x+35)+"px";
+    texto.style.top=(y-30)+"px";
+
+    area.appendChild(texto);
+
+    setTimeout(()=>{
+        texto.remove();
+    },500);
+}
+
+function criarCritico(x,y){
+
+    const critico=document.createElement("div");
+
+    critico.className="critico";
+    critico.textContent="CRITICAL!";
+
+    critico.style.left=x+"px";
+    critico.style.top=(y-40)+"px";
+
+    area.appendChild(critico);
+
+    setTimeout(()=>{
+        critico.remove();
+    },700);
+}
+
+function criarFlash(){
+
+    const flash=document.createElement("div");
+
+    flash.className="flash";
+
+    area.appendChild(flash);
+
+    setTimeout(()=>{
+        flash.remove();
+    },150);
+}
+
+function tremer(tipo){
+
+    area.classList.remove("tremor","tremor-forte");
+
+    void area.offsetWidth;
+
+    if(tipo==="forte"){
+        area.classList.add("tremor-forte");
+    }else{
+        area.classList.add("tremor");
+    }
+}
+
+function explosaoFinal(){
+
+    if(explodiu)return;
+
+    explodiu=true;
+
+    barra.style.width="100%";
+
+    frenzyTexto.textContent="FRENZY MAX!";
+    frenzyTexto.classList.add("ativo");
+    area.classList.add("frenzy-mode");
+
+    criarFlash();
+    tremer("forte");
+
+    const explosao=document.createElement("div");
+
+    explosao.className="explosao";
+
+    area.appendChild(explosao);
+
+    for(let i=0;i<70;i++){
+
+        const particula=document.createElement("div");
+
+        particula.className="sangue-explosao";
+
+        particula.style.left="50%";
+        particula.style.top="50%";
+
+        const angulo=Math.random()*Math.PI*2;
+        const distancia=80+Math.random()*400;
+
+        particula.style.setProperty(
+            "--dx",
+            Math.cos(angulo)*distancia+"px"
+        );
+
+        particula.style.setProperty(
+            "--dy",
+            Math.sin(angulo)*distancia+"px"
+        );
+
+        particula.style.setProperty(
+            "--rot",
+            Math.random()*720-360+"deg"
+        );
+
+        const tamanho=7+Math.random()*12;
+
+        particula.style.width=tamanho+"px";
+        particula.style.height=(tamanho*1.5)+"px";
+
+        area.appendChild(particula);
+
+        setTimeout(()=>{
+            particula.remove();
+        },1000);
+    }
+
+    setTimeout(()=>{
+
+        explosao.remove();
+
+        golpes=0;
+        combo=0;
+        ultimoGolpe=0;
+        explodiu=false;
+
+        contador.textContent="0";
+        comboTexto.textContent="0";
+        barra.style.width="0%";
+
+        frenzyTexto.textContent="FRENZY MODE";
+        frenzyTexto.classList.remove("ativo");
+        area.classList.remove("frenzy-mode");
+
+    },1100);
+}
+
+function resetar(){
+
+    golpes=0;
+    combo=0;
+    ultimoGolpe=0;
+    explodiu=false;
+
+    contador.textContent="0";
+    comboTexto.textContent="0";
+    barra.style.width="0%";
+
+    frenzyTexto.textContent="FRENZY MODE";
+    frenzyTexto.classList.remove("ativo");
+
+    area.classList.remove("frenzy-mode");
+
+    document.querySelectorAll(
+        ".marca,.particula,.pow,.critico,.impacto,.impacto2,.punho,.flash,.explosao,.sangue-explosao"
+    ).forEach(el=>el.remove());
+}
+</script>
+
+</body>
+</html>
